@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Deep red-black, distinct from the original (#0B0E14 teal/near-black), the "Alpha"
+     build's deep violet (#1A0E2E), and the "Reversal-Zone" build's deep teal-black
+     (#0A1F1C), so this Gold-Zone build is visually distinguishable in the app drawer /
+     recents from any previously-installed version when several sit side by side on the
+     same device. Sets up the red half of the red-gold icon; the foreground vector below
+     carries the gold half. -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="rectangle">
+    <solid android:color="#1A0604" />
+</shape>

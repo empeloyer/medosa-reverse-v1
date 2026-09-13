@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <!-- Same up/down candle-arrow silhouette as the other builds, recolored to a
+         red-gold pair (gold up-arrow, red down-arrow) — distinct from the original
+         teal/red, Alpha's gold/violet, and Reversal-Zone's cyan/orange — so this
+         Gold-Zone build's icon is clearly distinguishable at a glance from any
+         previously-installed app. -->
+    <path
+        android:fillColor="#E8B93D"
+        android:pathData="M30,74 L48,50 L60,62 L82,32 L88,38 L60,78 L48,66 L36,80 Z" />
+    <path
+        android:fillColor="#E6394F"
+        android:pathData="M30,34 L48,58 L60,46 L82,76 L88,70 L60,30 L48,42 L36,28 Z" />
+    <!-- Small circular arrow motif, bottom-right, standing in for the re-entry concept
+         (distinct badge shape from the Alpha build's "A" glyph, so the two icons don't
+         read as variants of the same badge at small sizes). Pale gold instead of plain
+         white so the badge still reads as part of the red-gold palette. -->
+    <path
+        android:fillColor="#F5D67B"
+        android:pathData="M82,70 A9,9 0 1 1 73,61 L73,65 A5,5 0 1 0 78,70 L74,70 L81,77 L88,70 Z" />
+</vector>
