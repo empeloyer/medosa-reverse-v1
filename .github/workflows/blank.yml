@@ -1,0 +1,105 @@
+name: Build Android APK
+
+# Builds the BTCUSDT Signal app APK in CI so contributors don't need a local
+# Android Studio / SDK setup. Triggers on every push/PR to main, and can also
+# be run manually from the Actions tab.
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+  workflow_dispatch: {}
+
+permissions:
+  contents: write   # needed only for the tag-triggered release upload step below
+
+jobs:
+  build:
+    name: Assemble debug + release APK
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          # This repo's zip export did not include the Gradle wrapper
+          # (gradlew / gradle-wrapper.jar), so this workflow installs the
+          # exact Gradle version the project was authored against directly,
+          # rather than assuming a wrapper that isn't there. If you commit a
+          # real wrapper later (`gradle wrapper --gradle-version 8.7` from a
+          # machine with a working Gradle + network access), you can switch
+          # the steps below from `gradle` back to `./gradlew`.
+          gradle-version: "8.7"
+
+      - name: Run unit tests
+        run: gradle testDebugUnitTest --stacktrace
+
+      - name: Upload test reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: unit-test-reports
+          path: app/build/reports/tests/testDebugUnitTest/
+          retention-days: 14
+          if-no-files-found: ignore
+
+      - name: Build debug APK
+        run: gradle assembleDebug --stacktrace
+
+      - name: Build release APK (unsigned)
+        run: gradle assembleRelease --stacktrace
+
+      - name: Upload debug APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-debug-apk
+          path: app/build/outputs/apk/debug/*.apk
+          retention-days: 30
+
+      - name: Upload release APK (unsigned)
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-release-apk-unsigned
+          path: app/build/outputs/apk/release/*.apk
+          retention-days: 30
+
+      - name: Summary
+        if: always()
+        run: |
+          echo "### Build summary" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Strategy database: app/src/main/assets/strategies_parameters.json" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Debug and unsigned-release APKs are attached as workflow artifacts (see the Artifacts section of this run)." >> "$GITHUB_STEP_SUMMARY"
+          echo "- The release APK is UNSIGNED. Sign it yourself before distributing (see README note below), or add a signing step with secrets configured in this repo's Settings > Secrets." >> "$GITHUB_STEP_SUMMARY"
+
+  # Optional: on a version tag (e.g. v1.2.0), also attach the APKs to a GitHub Release.
+  release:
+    name: Attach APKs to a GitHub Release
+    needs: build
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: "8.7"
+      - run: gradle assembleDebug assembleRelease --stacktrace
+      - name: Create GitHub Release with APKs attached
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            app/build/outputs/apk/debug/*.apk
+            app/build/outputs/apk/release/*.apk
+          generate_release_notes: true
